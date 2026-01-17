@@ -4,6 +4,7 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -40,6 +41,11 @@ app.use(express.json());
 
 // 静态文件服务
 app.use(express.static(__dirname));
+
+// 根路径路由，确保返回index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // 聊天API端点
 app.post('/api/chat', async (req, res) => {
