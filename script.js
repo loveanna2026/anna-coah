@@ -237,9 +237,6 @@ async function callAPIWithStreaming(messageContentElement, currentMessages) {
         
         console.log('Starting to process stream...');
         
-        // 保存完整的响应内容
-        let fullResponse = '';
-        
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
@@ -262,7 +259,7 @@ async function callAPIWithStreaming(messageContentElement, currentMessages) {
                     if (line.startsWith('data: ')) {
                         const jsonStr = line.slice(6).trim();
                         if (jsonStr === '[DONE]') {
-                            // 流式结束
+                            // 流式结束，退出循环
                             console.log('Stream done signal received');
                             break;
                         }
@@ -276,7 +273,6 @@ async function callAPIWithStreaming(messageContentElement, currentMessages) {
                                     messageContentElement.appendChild(contentPara);
                                 }
                                 contentPara.textContent += data.content;
-                                fullResponse += data.content;
                                 
                                 // 滚动到底部
                                 chatHistory.scrollTop = chatHistory.scrollHeight;
@@ -286,34 +282,6 @@ async function callAPIWithStreaming(messageContentElement, currentMessages) {
                         }
                     }
                 }
-            }
-        }
-        
-        // 流式输出完成后，对完整内容进行Markdown解析
-        if (fullResponse && contentPara) {
-            // 保存bot header
-            const botHeader = messageContentElement.querySelector('h3');
-            
-            // 获取完整的响应文本
-            const fullText = contentPara.textContent;
-            
-            try {
-                // 使用marked库将Markdown转换为HTML
-                const htmlContent = marked.parse(fullText);
-                
-                // 清空当前内容
-                messageContentElement.innerHTML = '';
-                
-                // 添加回bot header
-                if (botHeader) {
-                    messageContentElement.appendChild(botHeader);
-                }
-                
-                // 添加解析后的HTML内容
-                messageContentElement.innerHTML += htmlContent;
-            } catch (mdError) {
-                console.error('Markdown渲染错误:', mdError);
-                // 保留原始文本，不做处理
             }
         }
     } catch (error) {
